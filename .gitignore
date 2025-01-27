@@ -1,0 +1,12 @@
+# venv
+
+.env/
+
+# IDE config
+
+.vscode/
+
+# py bytecode
+
+__pycache__
+
