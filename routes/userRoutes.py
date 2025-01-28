@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database.database_session import get_db
 from database.modelsTable import dataUsers
-from schema.usersSchema import responseData, responseDelete, responseUsers, updateDataUsers
+from schema.usersSchema import (createResponseUsers, responseData, responseDelete, responseUsers,
+    updateDataUsers)
 
 userRoute = APIRouter()
 
@@ -18,7 +19,8 @@ async def getAllDataUsers(db: Session = Depends(get_db)):
                 "id": data.id,
                 "name": data.name,
                 "job": data.job,
-                "salary":data.salary
+                "salary":data.salary,
+                "role": data.role
             }
             for data in showDataUsers     
         ]
@@ -28,19 +30,21 @@ async def getAllDataUsers(db: Session = Depends(get_db)):
     
     
 @userRoute.post(path='/addNewUsers', response_model=responseUsers, summary="add new users")
-async def addUsers(users: responseData, db: Session = Depends(get_db)):
+async def addUsers(users: createResponseUsers, db: Session = Depends(get_db)):
     try:
-        check_data = db.query(dataUsers).filter(dataUsers.id == users.id).first()
+        check_data = db.query(dataUsers).filter(dataUsers.name == users.name).first()
         if check_data:
             raise HTTPException(status_code=999, detail="user was exist")
         
         new_users = dataUsers(
             name=users.name,
             job=users.job,
-            salary=users.salary
+            salary=users.salary,
+            role=users.role
         )
         db.add(new_users)
         db.commit()
+        db.refresh(new_users)
         
         return responseUsers(status="success", message="success add new users", data=[new_users])
     except Exception as e:
@@ -60,6 +64,8 @@ async def updateData(user_id: int ,updateData: updateDataUsers, db: Session = De
             update_data.job = updateData.job
         if updateData.salary:
             update_data.salary = updateData.salary
+        if updateData.role:
+            update_data.role = updateData.role
             
         db.commit()
         db.refresh(update_data)
@@ -80,7 +86,8 @@ async def deleteUsers(user_id: int, db: Session = Depends(get_db)):
             'id': delete_user.id,
             'name': delete_user.name,
             'job': delete_user.job,
-            'salary': delete_user.salary
+            'salary': delete_user.salary,
+            'role': delete_user.role
         }
         
         

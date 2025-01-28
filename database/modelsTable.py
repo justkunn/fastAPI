@@ -8,3 +8,4 @@ class dataUsers(Base):
     name = Column(String(255))
     job = Column(String(255))
     salary = Column(Integer)
+    role = Column(String(255))
